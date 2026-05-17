@@ -20,20 +20,13 @@ jobs:
         run: |
           chmod +x ./make.sh
           
-          # 1. Pre-configure your required signing keys safely
+          # 1. Pre-configure required signing keys safely
           mkdir -p app
           keytool -genkeypair -v -keystore app/my-release-key.jks -keyalg RSA -keysize 2048 -validity 10000 -alias webtoapk -storepass 123456 -keypass 123456 -dname "CN=WebToApk" || true
           keytool -genkeypair -v -keystore app/release.keystore -keyalg RSA -keysize 2048 -validity 10000 -alias android -storepass android -keypass android -dname "CN=WebToApk" || true
           
-          # 2. Override internal compiler properties globally so paths never conflict
-          export GRADLE_OPTS="-Dandroid.home=/home/runner/work/website-to-apk/website-to-apk -Dandroid.sdk.root=/home/runner/work/website-to-apk/website-to-apk"
-          export JAVA_OPTS="-Dandroid.home=/home/runner/work/website-to-apk/website-to-apk -Dandroid.sdk.root=/home/runner/work/website-to-apk/website-to-apk"
-          
-          # 3. Force any hidden internal project paths to align perfectly
-          find . -name "gradlew" -exec sed -i '2i export ANDROID_HOME="/home/runner/work/website-to-apk/website-to-apk"\nexport ANDROID_SDK_ROOT="/home/runner/work/website-to-apk/website-to-apk"' {} \;
-          
-          # 4. Run the builder cleanly
-          echo "y" | ./make.sh build webapk.conf
+          # 2. Accept exactly 30 license prompts automatically, then stop so the compiler runs smoothly
+          for i in {1..30}; do echo "y"; done | ./make.sh build webapk.conf
 
       - name: Extract Completed APK
         uses: actions/upload-artifact@v4
