@@ -19,6 +19,7 @@ jobs:
       - name: Run Build Script
         run: |
           chmod +x ./make.sh
+          yes | ./make.sh build webapk.conf || true
           ./make.sh keygen
           yes | ./make.sh build webapk.conf
 
@@ -27,4 +28,3 @@ jobs:
         with:
           name: Twitter-AdFree
           path: "**/*.apk"
-          
