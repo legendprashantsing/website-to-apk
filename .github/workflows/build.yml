@@ -20,15 +20,19 @@ jobs:
         run: |
           chmod +x ./make.sh
           
-          # Force the script's internal variables to match right before the compiler triggers
-          sed -i 's|./gradlew|export ANDROID_HOME="$ANDROID_SDK_ROOT" && ./gradlew|g' make.sh
-          
-          # Pre-configure the required signing keys securely
+          # 1. Pre-configure your required signing keys safely
           mkdir -p app
           keytool -genkeypair -v -keystore app/my-release-key.jks -keyalg RSA -keysize 2048 -validity 10000 -alias webtoapk -storepass 123456 -keypass 123456 -dname "CN=WebToApk" || true
           keytool -genkeypair -v -keystore app/release.keystore -keyalg RSA -keysize 2048 -validity 10000 -alias android -storepass android -keypass android -dname "CN=WebToApk" || true
           
-          # Run the builder cleanly
+          # 2. Override internal compiler properties globally so paths never conflict
+          export GRADLE_OPTS="-Dandroid.home=/home/runner/work/website-to-apk/website-to-apk -Dandroid.sdk.root=/home/runner/work/website-to-apk/website-to-apk"
+          export JAVA_OPTS="-Dandroid.home=/home/runner/work/website-to-apk/website-to-apk -Dandroid.sdk.root=/home/runner/work/website-to-apk/website-to-apk"
+          
+          # 3. Force any hidden internal project paths to align perfectly
+          find . -name "gradlew" -exec sed -i '2i export ANDROID_HOME="/home/runner/work/website-to-apk/website-to-apk"\nexport ANDROID_SDK_ROOT="/home/runner/work/website-to-apk/website-to-apk"' {} \;
+          
+          # 4. Run the builder cleanly
           echo "y" | ./make.sh build webapk.conf
 
       - name: Extract Completed APK
