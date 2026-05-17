@@ -19,8 +19,8 @@ jobs:
       - name: Run Build Script
         run: |
           chmod +x ./make.sh
-          yes | ./make.sh build webapk.conf || true
-          ./make.sh keygen
+          mkdir -p app
+          keytool -genkeypair -v -keystore app/my-release-key.jks -keyalg RSA -keysize 2048 -validity 10000 -alias webtoapk -storepass 123456 -keypass 123456 -dname "CN=WebToApk"
           yes | ./make.sh build webapk.conf
 
       - name: Extract Completed APK
@@ -28,3 +28,4 @@ jobs:
         with:
           name: Twitter-AdFree
           path: "**/*.apk"
+          
