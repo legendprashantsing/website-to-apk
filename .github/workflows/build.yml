@@ -16,20 +16,15 @@ jobs:
           distribution: 'temurin'
           java-version: '17'
 
-      - name: Run Auto-Detected Build Script
+      - name: Run Build Script
         run: |
           chmod +x ./make.sh
           
-          # Automatically extract the exact keystore configuration required by your script
-          KS_NAME=$(grep -oE "[a-zA-Z0-9._-]+\.(jks|keystore)" make.sh | head -n 1 || echo "release.keystore")
-          KS_PASS=$(grep -oE "pass:[a-zA-Z0-9]+" make.sh | head -n 1 | sed 's/pass://' || echo "android")
-          KS_ALIAS=$(grep -oE "\-alias [a-zA-Z0-9]+" make.sh | head -n 1 | sed 's/-alias //' || echo "android")
-          
-          # Pre-generate the exact keys required in both potential directories
-          keytool -genkeypair -v -keystore "$KS_NAME" -keyalg RSA -keysize 2048 -validity 10000 -alias "$KS_ALIAS" -storepass "$KS_PASS" -keypass "$KS_PASS" -dname "CN=WebToApk" || true
+          # Pre-create the folder and security keys with the correct 6-character passwords
           mkdir -p app
-          keytool -genkeypair -v -keystore app/$KS_NAME -keyalg RSA -keysize 2048 -validity 10000 -alias "$KS_ALIAS" -storepass "$KS_PASS" -keypass "$KS_PASS" -dname "CN=WebToApk" || true
+          keytool -genkeypair -v -keystore app/my-release-key.jks -keyalg RSA -keysize 2048 -validity 10000 -alias webtoapk -storepass 123456 -keypass 123456 -dname "CN=WebToApk" || true
+          keytool -genkeypair -v -keystore app/release.keystore -keyalg RSA -keysize 2048 -validity 10000 -alias android -storepass android -keypass android -dname "CN=WebToApk" || true
           
-          # Run the build safely without freezing loops
-          ./make.sh build webapk.conf
+          # Send a single "y" to accept the SDK tools download without freezing up later
+          echo "y" | ./make.sh build webapk.conf
           
