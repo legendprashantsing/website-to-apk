@@ -19,6 +19,7 @@ jobs:
       - name: Run Build Script
         run: |
           chmod +x ./make.sh
+          ./make.sh keygen
           yes | ./make.sh build webapk.conf
 
       - name: Extract Completed APK
