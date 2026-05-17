@@ -20,11 +20,21 @@ jobs:
         run: |
           chmod +x ./make.sh
           
-          # Pre-create the folder and security keys with the correct 6-character passwords
+          # Fix the path conflict by turning off the conflicting system variable
+          unset ANDROID_SDK_ROOT
+          export ANDROID_SDK_ROOT=""
+          
+          # Pre-configure your required signing keys safely
           mkdir -p app
           keytool -genkeypair -v -keystore app/my-release-key.jks -keyalg RSA -keysize 2048 -validity 10000 -alias webtoapk -storepass 123456 -keypass 123456 -dname "CN=WebToApk" || true
           keytool -genkeypair -v -keystore app/release.keystore -keyalg RSA -keysize 2048 -validity 10000 -alias android -storepass android -keypass android -dname "CN=WebToApk" || true
           
-          # Send a single "y" to accept the SDK tools download without freezing up later
+          # Run the builder cleanly
           echo "y" | ./make.sh build webapk.conf
+
+      - name: Extract Completed APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: Twitter-AdFree
+          path: "**/*.apk"
           
