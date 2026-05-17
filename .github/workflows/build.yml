@@ -20,11 +20,10 @@ jobs:
         run: |
           chmod +x ./make.sh
           
-          # Fix the path conflict by turning off the conflicting system variable
-          unset ANDROID_SDK_ROOT
-          export ANDROID_SDK_ROOT=""
+          # Force the script's internal variables to match right before the compiler triggers
+          sed -i 's|./gradlew|export ANDROID_HOME="$ANDROID_SDK_ROOT" && ./gradlew|g' make.sh
           
-          # Pre-configure your required signing keys safely
+          # Pre-configure the required signing keys securely
           mkdir -p app
           keytool -genkeypair -v -keystore app/my-release-key.jks -keyalg RSA -keysize 2048 -validity 10000 -alias webtoapk -storepass 123456 -keypass 123456 -dname "CN=WebToApk" || true
           keytool -genkeypair -v -keystore app/release.keystore -keyalg RSA -keysize 2048 -validity 10000 -alias android -storepass android -keypass android -dname "CN=WebToApk" || true
