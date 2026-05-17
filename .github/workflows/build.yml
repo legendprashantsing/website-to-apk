@@ -25,8 +25,16 @@ jobs:
           keytool -genkeypair -v -keystore app/my-release-key.jks -keyalg RSA -keysize 2048 -validity 10000 -alias webtoapk -storepass 123456 -keypass 123456 -dname "CN=WebToApk" || true
           keytool -genkeypair -v -keystore app/release.keystore -keyalg RSA -keysize 2048 -validity 10000 -alias android -storepass android -keypass android -dname "CN=WebToApk" || true
           
-          # 2. Accept exactly 30 license prompts automatically, then stop so the compiler runs smoothly
-          for i in {1..30}; do echo "y"; done | ./make.sh build webapk.conf
+          # 2. Let the script prepare your app configurations completely.
+          # We add "|| true" so it doesn't halt the build when it hits the script's internal path bug.
+          for i in {1..30}; do echo "y"; done | ./make.sh build webapk.conf || true
+          
+          # 3. Explicitly unify the environment variables to point to the exact same folder
+          export ANDROID_HOME="$GITHUB_WORKSPACE/cmdline-tools"
+          export ANDROID_SDK_ROOT="$GITHUB_WORKSPACE/cmdline-tools"
+          
+          # 4. Run the compilation command directly ourselves with the corrected paths
+          ./gradlew assembleRelease
 
       - name: Extract Completed APK
         uses: actions/upload-artifact@v4
