@@ -19,8 +19,7 @@ jobs:
       - name: Run Build Script
         run: |
           chmod +x ./make.sh
-       yes | ./make.sh build webapk.conf
-                    
+          yes | ./make.sh build webapk.conf
 
       - name: Extract Completed APK
         uses: actions/upload-artifact@v4
